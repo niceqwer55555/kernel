@@ -1,0 +1,126 @@
+#==========================================================================
+# Description: Compile release rk35xx kernel
+# Copyright (C) 2023 https://github.com/unifreq/linux-5.10.y-rk35xx
+# Copyright (C) 2023 https://github.com/ophub/kernel
+#==========================================================================
+
+name: Compile release rk3566jp 6.x kernel
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      kernel_source:
+        description: "Select the kernel source"
+        required: false
+        default: "niceqwer55555/linux-6.1.y"
+        type: choice
+        options:
+          - unifreq/linux-5.10.y-rk35xx
+          - niceqwer55555/linux-5.10.y-rk35xx
+          - niceqwer55555/linux-6.1.y
+          - niceqwer55555/kernel-rockchip@nanopi6-v6.1.y
+          - niceqwer55555/linux-orangepi@orange-pi-6.1-rk35xx
+      kernel_version:
+        description: "Select kernel version"
+        required: false
+        default: "6.1.84"
+        type: choice
+        options:
+          - 6.1.43
+          - 6.1.84
+      kernel_auto:
+        description: "Auto use the latest kernel"
+        required: false
+        default: true
+        type: boolean
+      kernel_package:
+        description: "Select compile package list"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - dtbs
+      kernel_toolchain:
+        description: "Select the compilation toolchain"
+        required: false
+        default: "gcc"
+        type: choice
+        options:
+          - gcc
+      kernel_sign:
+        description: "Set the kernel custom signature"
+        required: false
+        default: "-rk35xx-ophub"
+        type: choice
+        options:
+          - -rk35xx-ophub
+          - -rk35xx-hiasia
+      kernel_config:
+        description: "Set the path of kernel .config"
+        required: false
+        default: "kernel-config/release/rk35xx/jp"
+        type: choice
+        options:
+          - kernel-config/release/rk35xx
+          - kernel-config/release/rk35xx/jp
+          - false
+
+env:
+  TZ: America/New_York
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Initialization environment
+        id: init
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker rmi `docker images -q`
+          [[ -n "${AGENT_TOOLSDIRECTORY}" ]] && sudo rm -rf "${AGENT_TOOLSDIRECTORY}"
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android 2>/dev/null
+          sudo -E apt-get -y update
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+          sudo -E apt-get -y install $(curl -fsSL https://is.gd/depend_ubuntu2204_armbian)
+          sudo -E systemctl daemon-reload
+          #sudo -E apt-get -y full-upgrade
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          sudo timedatectl set-timezone "${TZ}"
+          echo "status=success" >> ${GITHUB_OUTPUT}
+
+      - name: Compile the kernel [ ${{ inputs.kernel_version }} ]
+        uses: niceqwer55555/amlogic-s9xxx-armbian@main
+        if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
+        with:
+          build_target: kernel
+          kernel_source: ${{ inputs.kernel_source }}
+          kernel_version: ${{ inputs.kernel_version }}
+          kernel_auto: ${{ inputs.kernel_auto }}
+          kernel_package: ${{ inputs.kernel_package }}
+          kernel_toolchain: ${{ inputs.kernel_toolchain }}
+          kernel_sign: ${{ inputs.kernel_sign }}
+          kernel_config: ${{ inputs.kernel_config }}
+
+      - name: Upload Kernel to Release
+        uses: niceqwer55555/release-action@main
+        if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
+        with:
+          tag: kernel_rk35xx
+          artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            - The kernel can be used to compile Armbian and OpenWrt.
+            - The kernel source code comes from: orangepi-xunlong/linux-orangepi friendlyarm/kernel-rockchip
+            - The kernel compilation toolchain: gcc
+            - This is a dedicated kernel for `Rockchip rk3528/rk3566/rk3568` and is not compatible with other series.
+            - 这是 `Rockchip rk3528/rk3566/rk3568` 专用内核，和其他系列不通用。
