@@ -4,7 +4,7 @@
 # Copyright (C) 2023 https://github.com/ophub/kernel
 #==========================================================================
 
-name: Compile release rk3566jp-gpu-npu-vpn kernel
+name: Compile release rk3566jp-gpu-npu-vpn-ok kernel
 
 on:
   repository_dispatch:
