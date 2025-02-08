@@ -82,10 +82,10 @@ on:
       kernel_config:
         description: "Set the path of kernel .config"
         required: false
-        default: "kernel-config/release/rk35xx"
+        default: "kernel-config/release/rk35xx/jp"
         type: choice
         options:
-          - kernel-config/release/rk35xx
+          - kernel-config/release/rk35xx/jp
           - false
 
 env:
