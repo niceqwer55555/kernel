@@ -55,3 +55,20 @@
 ## License
 
 The kernel © OPHUB is licensed under [GPL-2.0](https://github.com/ophub/kernel/blob/main/LICENSE)
+
+检查驱动
+
+root@armbian:~# ls /dev/dri
+by-path  card0  card1  renderD128  renderD129
+root@armbian:~# ls /dev/mpp_service
+/dev/mpp_service
+root@armbian:~# cat /sys/class/devfreq/fde40000.npu/available_frequencies
+200000000 297000000 400000000 600000000 700000000 800000000 900000000
+root@armbian:~# sensors
+soc_thermal-virtual-0
+Adapter: Virtual device
+temp1:        +37.2°C  (crit = +115.0°C)
+
+gpu_thermal-virtual-0
+Adapter: Virtual device
+temp1:        +38.9°C  (crit = +115.0°C)
