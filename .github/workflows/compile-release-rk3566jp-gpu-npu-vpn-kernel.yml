@@ -13,16 +13,17 @@ on:
       kernel_source:
         description: "Select the kernel source"
         required: false
-        default: "unifreq/linux-5.10.y-rk35xx"
+        default: "niceqwer55555/linux-rockchip@rk-6.1-rkr4.1"
         type: choice
         options:
           - unifreq/linux-5.10.y-rk35xx
           - codesnas/linux-5.10.y-rk35xx
           - armbian/linux-rockchip@rk-6.1-rkr4.1
+          - niceqwer55555/linux-rockchip@rk-6.1-rkr4.1
       kernel_version:
         description: "Select kernel version"
         required: false
-        default: "5.10.y"
+        default: "6.1.y"
         type: choice
         options:
           - 5.10.y
@@ -152,7 +153,7 @@ jobs:
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Compile the kernel [ ${{ inputs.kernel_version }} ]
-        uses: ophub/amlogic-s9xxx-armbian@main
+        uses: niceqwer55555/amlogic-s9xxx-armbian@main
         if: ${{ steps.mapped.outputs.status }} == 'success' && !cancelled()
         with:
           build_target: kernel
@@ -166,7 +167,7 @@ jobs:
           compress_format: ${{ inputs.compress_format }}
 
       - name: Upload Kernel to Release
-        uses: ncipollo/release-action@main
+        uses: niceqwer55555/release-action@main
         if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
         with:
           tag: kernel_rk3566jp
